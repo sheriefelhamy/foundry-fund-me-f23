@@ -1,136 +1,184 @@
-# First Flight #1: PasswordStore
+# FundMe Smart Contract
 
-- [Contest Details](2023-10-PasswordStore/README.md#contest-details)
-  - [Stats](2023-10-PasswordStore/README.md#stats)
-- [Getting Started](2023-10-PasswordStore/README.md#getting-started)
-  - [Requirements](2023-10-PasswordStore/README.md#requirements)
-  - [Quickstart](2023-10-PasswordStore/README.md#quickstart)
-    - [Optional Gitpod](2023-10-PasswordStore/README.md#optional-gitpod)
-- [Usage](2023-10-PasswordStore/README.md#usage)
-  - [Deploy (local)](2023-10-PasswordStore/README.md#deploy-local)
-  - [Testing](2023-10-PasswordStore/README.md#testing)
-    - [Test Coverage](2023-10-PasswordStore/README.md#test-coverage)
-  - [Compatibilities](2023-10-PasswordStore/README.md#compatibilities)
-- [Roles](2023-10-PasswordStore/README.md#roles)
-- [Known Issues](2023-10-PasswordStore/README.md#known-issues)
+## Table of Contents
 
-[//]: 2023-10-PasswordStore/README.md# (contest-details-open)
-
-## Contest Details
-
-- 2x XP/Finding!
-  
-- High - 200xp
-- Medium - 40xp
-- Low - 4xp
-
-Starts: 00:00 UTC Wednesday, Oct 18 2023
-
-Ends: 00:00 UTC Wednesday, Oct 25 2023
-
-## Stats
-
-- nSLOC: 20
-- Complexity Score: 10
+- [About](#about)
+- [Getting Started](#getting-started)
+  - [Requirements](#requirements)
+  - [Quickstart](#quickstart)
+- [Usage](#usage)
+  - [Deploy (Local)](#deploy-local)
+  - [Testing](#testing)
+    - [Test Coverage](#test-coverage)
+  - [Compatibilities](#compatibilities)
+- [Gas Optimization](#gas-optimization)
+- [Deployment to Testnet/Mainnet](#deployment-to-testnet-mainnet)
+- [Roles](#roles)
+- [Known Issues](#known-issues)
 
 ## About
 
-PasswordStore is a smart contract application for storing a password. Users should be able to store a password and then retrieve it later. Others should not be able to access the password.
-
-## Roles
-
-Owner - Only the owner may set and retrieve their password
-
-[//]: 2023-10-PasswordStore/README.md# (contest-details-close)
-
-[//]: 2023-10-PasswordStore/README.md# (getting-started-open)
+FundMe is a smart contract designed for decentralized crowdfunding. Users can fund the contract, and the owner can withdraw the collected funds. The contract uses Chainlink price feeds to convert ETH to USD.
 
 ## Getting Started
 
-## Requirements
+### Requirements
 
-- [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-  - You'll know you did it right if you can run `git --version` and you see a response like `git version x.x.x`
-- [foundry](https://getfoundry.sh/)
-  - You'll know you did it right if you can run `forge --version` and you see a response like `forge 0.2.0 (816e00b 2023-03-16T00:05:26.396218Z)`
+- [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+  - Verify installation with `git --version`
+- [Foundry](https://getfoundry.sh/)
+  - Verify installation with `forge --version`
 
-## Quickstart
+### Quickstart
 
-```
-git clone https://github.com/Cyfrin/2023-10-PasswordStore
-cd 2023-10-PasswordStore
-​forge install foundry-rs/forge-std --no-commit
+```sh
+git clone https://github.com/YOUR_GITHUB_USERNAME/FundMe
+cd FundMe
+forge install foundry-rs/forge-std --no-commit
 forge build
 ```
 
-### Optional Gitpod
-
-If you can't or don't want to run and install locally, you can work with this repo in Gitpod. If you do this, you can skip the `clone this repo` part.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/Cyfrin/3-passwordstore-audit)
-
 ## Usage
 
-### Deploy (local)
+### Deploy (Local)
 
 1. Start a local node
 
-```
+```sh
 make anvil
 ```
 
-2. Deploy
+2. Deploy the contract
 
-This will default to your local node. You need to have it running in another terminal in order for it to deploy.
-
-```
+```sh
 make deploy
 ```
 
-## Testing
+### Testing
 
-```
+Run unit tests with:
+
+```sh
 forge test
 ```
 
-### Test Coverage
+#### Test Coverage
 
-```
+To check test coverage:
+
+```sh
 forge coverage
 ```
 
-and for coverage based testing:
+For detailed debugging:
 
-```
+```sh
 forge coverage --report debug
-```
-
-[//]: 2023-10-PasswordStore/README.md# (getting-started-close)
-
-[//]: 2023-10-PasswordStore/README.md# (scope-open)
-
-## Scope
-
-- Commit Hash: 2e8f81e263b3a9d18fab4fb5c46805ffc10a9990
-- In Scope:
-
-```
-./src/
-└── PasswordStore.sol
 ```
 
 ## Compatibilities
 
-- Solc Version: 0.8.18
-- Chain(s) to deploy contract to: Ethereum
+- **Solc Version**: 0.8.18
+- **Chain(s) to deploy contract to**: Ethereum
 
-[//]: 2023-10-PasswordStore/README.md# (scope-close)
+## Gas Optimization
+
+The contract underwent optimizations to reduce gas costs, primarily by reducing storage reads/writes and favoring memory-based operations where possible. Below are the key improvements:
+
+- **testWithdrawFromAMultipleFunders**: Saved 3248 gas
+- **testOnlyOwnerCanWithdraw**: Saved 2135 gas
+- **testOwnerIsMsgSender**: Saved 2134 gas
+- **testWithdrawFromASingleFunder**: Saved 1852 gas
+
+These optimizations significantly improved contract efficiency by minimizing expensive storage operations and leveraging cheaper memory operations.
+
+### Example: Optimized `withdraw()` Function
+
+Before Optimization:
+```solidity
+function withdraw() public onlyOwner {
+    for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
+        address funder = s_funders[funderIndex];
+        s_addressToAmountFunded[funder] = 0;
+    }
+    s_funders = new address[](0);
+ 
+    (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+    require(callSuccess, "Call failed");
+}
+```
+
+After Optimization:
+```solidity
+function withdraw() public onlyOwner {
+    uint256 fundersLength = s_funders.length;
+    address[] memory _funders = s_funders;
+    
+    for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
+        address funder = _funders[funderIndex];
+        s_addressToAmountFunded[funder] = 0;
+    }
+    s_funders = new address[](0);
+
+    (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+    require(callSuccess, "Call failed");
+}
+```
+✅ **Improvement:** Storing `s_funders` in memory reduces redundant storage reads, leading to lower gas costs.
+
+## Deployment to Testnet/Mainnet
+
+### Setup Environment Variables
+You'll want to set your `SEPOLIA_RPC_URL` and `PRIVATE_KEY` as environment variables. You can add them to a `.env` file, similar to what you see in `.env.example`.
+
+- **PRIVATE_KEY**: The private key of your account (from Metamask). **Use a key that doesn't have real funds**.
+- **SEPOLIA_RPC_URL**: The URL of the Sepolia testnet node (you can get one from [Alchemy](https://www.alchemy.com/)).
+- **ETHERSCAN_API_KEY** (optional): Needed if you want to verify your contract on Etherscan.
+
+### Get Testnet ETH
+Go to [faucets.chain.link](https://faucets.chain.link/) and request testnet ETH. You should see it appear in your Metamask wallet.
+
+### Deploy to Testnet
+```sh
+forge script script/DeployFundMe.s.sol --rpc-url $SEPOLIA_RPC_URL --private-key $PRIVATE_KEY --broadcast --verify --etherscan-api-key $ETHERSCAN_API_KEY
+```
+
+### Run Scripts
+Once deployed, interact with your contract using the following commands:
+
+#### Fund the contract
+```sh
+cast send <FUNDME_CONTRACT_ADDRESS> "fund()" --value 0.1ether --private-key $PRIVATE_KEY
+```
+OR
+```sh
+forge script script/Interactions.s.sol --rpc-url sepolia --private-key $PRIVATE_KEY --broadcast
+```
+
+#### Withdraw funds
+```sh
+cast send <FUNDME_CONTRACT_ADDRESS> "withdraw()" --private-key $PRIVATE_KEY
+```
+
+### Estimate Gas Usage
+Run the following command to estimate gas costs:
+```sh
+forge snapshot
+```
+This generates a `.gas-snapshot` file containing gas usage data.
+
+### Code Formatting
+To format your Solidity code, run:
+```sh
+forge fmt
+```
+
+## Roles
+
+- **Owner**: The contract deployer who can withdraw funds
+- **Funders**: Users who send ETH to the contract
 
 ## Known Issues
 
-[//]: 2023-10-PasswordStore/README.md# (known-issues-open)
+_No known issues reported._
 
-<p align="center">
-No known issues reported.
-
-[//]: 2023-10-PasswordStore/README.md# (known-issues-close)

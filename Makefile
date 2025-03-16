@@ -55,7 +55,7 @@ deploy-zk-sepolia:
 
 
 # For deploying Interactions.s.sol:FundFundMe as well as for Interactions.s.sol:WithdrawFundMe we have to include a sender's address `--sender <ADDRESS>`
-SENDER_ADDRESS := <sender's address>
+SENDER_ADDRESS := 0x2EC0326C8F9865569Ba29c4eBAC624BA48604f61
  
 fund:
 	@forge script script/Interactions.s.sol:FundFundMe --sender $(SENDER_ADDRESS) $(NETWORK_ARGS)
