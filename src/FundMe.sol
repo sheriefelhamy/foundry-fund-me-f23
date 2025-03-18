@@ -12,20 +12,20 @@ contract FundMe {
 
     // Could we make this constant?  /* hint: no! We should make it immutable! */
     uint256 public constant MINIMUM_USD = 5 * 10 ** 18;
-    address immutable private i_owner;
+    address private immutable i_owner;
     AggregatorV3Interface private s_priceFeed;
     mapping(address => uint256) private s_addressToAmountFunded;
     address[] private s_funders;
-    
+
     constructor(address priceFeed) {
         i_owner = msg.sender;
         s_priceFeed = AggregatorV3Interface(priceFeed);
     }
-    
+
     receive() external payable {
         fund();
     }
-    
+
     fallback() external payable {
         fund();
     }
@@ -46,7 +46,7 @@ contract FundMe {
     function withdraw() public onlyOwner {
         uint256 fundersLength = s_funders.length;
         address[] memory _funders = s_funders;
-        
+
         for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
             address funder = _funders[funderIndex];
             s_addressToAmountFunded[funder] = 0;
@@ -63,7 +63,7 @@ contract FundMe {
         (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
         require(callSuccess, "Call failed");
     }
-    
+
     function getAddressToAmountFunded(address fundingAddress) public view returns (uint256) {
         return s_addressToAmountFunded[fundingAddress];
     }
@@ -84,7 +84,6 @@ contract FundMe {
         return s_priceFeed;
     }
 
-
     // Explainer from: https://solidity-by-example.org/fallback/
     // Ether is sent to contract
     //      is msg.data empty?
@@ -96,10 +95,7 @@ contract FundMe {
     //   yes   no
     //  /        \
     //receive()  fallback()
-
-    
 }
-
 
 // Concepts we didn't cover yet (will cover in later sections)
 // 1. Enum

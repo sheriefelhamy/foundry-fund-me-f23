@@ -38,10 +38,11 @@ contract FundMeTest is Test {
 
     function testPriceFeedVersionIsAccurate() public view {
         uint256 version = fundMe.getVersion();
-        if (block.chainid == 1) 
+        if (block.chainid == 1) {
             assertEq(version, 6);
-        else
+        } else {
             assertEq(version, 4);
+        }
     }
 
     function testExpectRevert() public {
@@ -49,16 +50,16 @@ contract FundMeTest is Test {
         fundMe.fund();
     }
 
-    function testAmountFunded() public funded() {
+    function testAmountFunded() public funded {
         assertEq(fundMe.getAddressToAmountFunded(USER), SEND_VALUE);
     }
 
-    function testAddsFunderToArrayOfFunders() public funded() {
+    function testAddsFunderToArrayOfFunders() public funded {
         address funder = fundMe.getFunder(0);
         assertEq(funder, USER);
     }
-    
-    function testOnlyOwnerCanWithdraw() public funded() {
+
+    function testOnlyOwnerCanWithdraw() public funded {
         vm.expectRevert();
         vm.prank(USER);
         fundMe.withdraw();
@@ -109,7 +110,5 @@ contract FundMeTest is Test {
         assertEq(endingFundMeBalance, 0);
         assertEq(startingFundMeBalance + startingOwnerBalance, endingOwnerBalance);
         assertEq(totalFunders * SEND_VALUE, fundMe.getOwner().balance - startingOwnerBalance);
-
     }
-
 }
