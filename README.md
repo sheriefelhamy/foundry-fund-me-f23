@@ -32,8 +32,8 @@ FundMe is a smart contract designed for decentralized crowdfunding. Users can fu
 ### Quickstart
 
 ```sh
-git clone https://github.com/sheriefelhamy/FundMe
-cd FundMe
+git clone https://github.com/sheriefelhamy/foundry-fund-me-f23.git
+cd foundry-fund-me-f23
 forge install foundry-rs/forge-std --no-commit
 forge build
 ```
