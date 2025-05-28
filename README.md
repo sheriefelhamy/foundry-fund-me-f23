@@ -32,7 +32,7 @@ FundMe is a smart contract designed for decentralized crowdfunding. Users can fu
 ### Quickstart
 
 ```sh
-git clone https://github.com/YOUR_GITHUB_USERNAME/FundMe
+git clone https://github.com/sheriefelhamy/FundMe
 cd FundMe
 forge install foundry-rs/forge-std --no-commit
 forge build
